@@ -40,12 +40,15 @@ export default async function handler(req, res) {
         const sheetData = await getSheetRes.json();
         if (!getSheetRes.ok) throw new Error('Gagal membaca data karyawan dari Excel');
 
-        const rows = sheetData.values; // Baris data dari Excel
-        // Asumsi Kolom A = UID Kartu, Kolom B = Nama Karyawan
+        const rows = sheetData.values; 
         let namaKaryawan = null;
-        for (let i = 1; i < rows.length; i++) { // Mulai dari baris ke-2 (lewati header)
+        let timKaryawan = '-';
+        
+        // Asumsi Kolom A = UID, Kolom B = Nama, Kolom C = Tim
+        for (let i = 1; i < rows.length; i++) {
             if (String(rows[i][0]).trim() === String(uid).trim()) {
                 namaKaryawan = rows[i][1];
+                timKaryawan = rows[i][2] || '-';
                 break;
             }
         }
@@ -54,8 +57,11 @@ export default async function handler(req, res) {
             return res.status(404).json({ message: 'Kartu RFID tidak terdaftar di sistem!' });
         }
 
-        // 3. Catat ke Sheet 'Log_Absensi'
-        const waktuSekarang = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+        // 3. Catat ke Sheet 'Log_Absensi' (Menyesuaikan 5 Kolom: Tanggal, Jam, UID, Nama, Tim)
+        const now = new Date();
+        const tanggalStr = now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' });
+        const jamStr = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
+
         const addRowRes = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${FILE_ID}/workbook/worksheets('Log_Absensi')/tables/TabelLog/rows`, {
             method: 'POST',
             headers: {
@@ -63,13 +69,13 @@ export default async function handler(req, res) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                values: [[uid, namaKaryawan, waktuSekarang, 'Hadir']]
+                values: [[tanggalStr, jamStr, uid, namaKaryawan, timKaryawan]]
             })
         });
 
         if (!addRowRes.ok) throw new Error('Gagal mencatat log absensi ke Excel');
 
-        return res.status(200).json({ success: true, nama: namaKaryawan, waktu: waktuSekarang });
+        return res.status(200).json({ success: true, nama: namaKaryawan, waktu: `${tanggalStr} ${jamStr}` });
 
     } catch (error) {
         console.error(error);
