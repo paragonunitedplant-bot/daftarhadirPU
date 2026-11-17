@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     const FILE_ID = process.env.MS_FILE_ID;
 
     try {
-        // 1. Dapatkan Access Token baru menggunakan Refresh Token
+        // 1. Dapatkan Access Token baru
         const tokenRes = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -32,23 +32,25 @@ export default async function handler(req, res) {
 
         const accessToken = tokenData.access_token;
 
-        // 2. Baca Sheet 'Data_Karyawan' untuk mencocokkan UID RFID
-        const getSheetRes = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${FILE_ID}/workbook/worksheets('Data_Karyawan')/usedRange`, {
+        // 2. Baca data karyawan via Tabel 'TabelKaryawan' di sheet 'Data_Karyawan'
+        const getSheetRes = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${FILE_ID}/workbook/worksheets('Data_Karyawan')/tables('TabelKaryawan')/rows`, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
 
         const sheetData = await getSheetRes.json();
-        if (!getSheetRes.ok) throw new Error('Gagal membaca data karyawan dari Excel');
+        if (!getSheetRes.ok) throw new Error('Gagal membaca tabel karyawan dari Excel');
 
-        const rows = sheetData.values; 
+        const rows = sheetData.value; 
         let namaKaryawan = null;
         let timKaryawan = '-';
         
-        // Asumsi Kolom A = UID, Kolom B = Nama, Kolom C = Tim
-        for (let i = 1; i < rows.length; i++) {
-            if (String(rows[i][0]).trim() === String(uid).trim()) {
-                namaKaryawan = rows[i][1];
-                timKaryawan = rows[i][2] || '-';
+        // Struktur row.values di Microsoft Graph API untuk tabel: item.values[baris][kolom]
+        for (let i = 0; i < rows.length; i++) {
+            const rowValues = rows[i].values[0];
+            const dbUid = String(rowValues[0]).trim();
+            if (dbUid === String(uid).trim()) {
+                namaKaryawan = rowValues[1];
+                timKaryawan = rowValues[2] || '-';
                 break;
             }
         }
@@ -57,7 +59,7 @@ export default async function handler(req, res) {
             return res.status(404).json({ message: 'Kartu RFID tidak terdaftar di sistem!' });
         }
 
-        // 3. Catat ke Sheet 'Log_Absensi' (Menyesuaikan 5 Kolom: Tanggal, Jam, UID, Nama, Tim)
+        // 3. Catat ke Sheet 'Log_Absensi' (Tabel 'TabelLog')
         const now = new Date();
         const tanggalStr = now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' });
         const jamStr = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
