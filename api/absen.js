@@ -32,25 +32,29 @@ export default async function handler(req, res) {
 
         const accessToken = tokenData.access_token;
 
-        // 2. Baca data karyawan via Tabel 'TabelKaryawan' di sheet 'Data_Karyawan'
-        const getSheetRes = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${FILE_ID}/workbook/worksheets('Data_Karyawan')/tables('TabelKaryawan')/rows`, {
+        // 2. Baca data karyawan langsung dari usedRange sheet 'Data_Karyawan' (Tanpa syarat nama tabel)
+        const getSheetRes = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${FILE_ID}/workbook/worksheets('Data_Karyawan')/usedRange`, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
 
         const sheetData = await getSheetRes.json();
-        if (!getSheetRes.ok) throw new Error('Gagal membaca tabel karyawan dari Excel');
+        if (!getSheetRes.ok) throw new Error('Gagal membaca sheet Data_Karyawan dari Excel');
 
-        const rows = sheetData.value; 
+        const rows = sheetData.values; 
+        if (!rows || rows.length < 2) {
+            return res.status(404).json({ message: 'Data karyawan kosong di Excel!' });
+        }
+
         let namaKaryawan = null;
         let timKaryawan = '-';
         
-        // Struktur row.values di Microsoft Graph API untuk tabel: item.values[baris][kolom]
-        for (let i = 0; i < rows.length; i++) {
-            const rowValues = rows[i].values[0];
-            const dbUid = String(rowValues[0]).trim();
+        // Loop mulai dari baris ke-1 (mengabaikan header baris ke-0)
+        // Kolom A (index 0) = UID, Kolom B (index 1) = Nama, Kolom C (index 2) = Tim
+        for (let i = 1; i < rows.length; i++) {
+            const dbUid = String(rows[i][0] || '').trim();
             if (dbUid === String(uid).trim()) {
-                namaKaryawan = rowValues[1];
-                timKaryawan = rowValues[2] || '-';
+                namaKaryawan = rows[i][1];
+                timKaryawan = rows[i][2] || '-';
                 break;
             }
         }
@@ -59,7 +63,7 @@ export default async function handler(req, res) {
             return res.status(404).json({ message: 'Kartu RFID tidak terdaftar di sistem!' });
         }
 
-        // 3. Catat ke Sheet 'Log_Absensi' (Tabel 'TabelLog')
+        // 3. Catat ke Sheet 'Log_Absensi' (Menggunakan Tabel 'TabelLog')
         const now = new Date();
         const tanggalStr = now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' });
         const jamStr = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
