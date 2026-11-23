@@ -8,110 +8,205 @@
     * {
       box-sizing: border-box;
     }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: #0f172a;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 16px;
+      padding: 24px;
+      position: relative;
+      overflow-x: hidden;
+      /* Latar belakang tekstur kertas kusut abu-abu terang */
+      background-color: #e4e6e9;
+      background-image:
+        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.72) 0%, transparent 45%),
+        radial-gradient(circle at 82% 28%, rgba(255, 255, 255, 0.58) 0%, transparent 48%),
+        radial-gradient(circle at 45% 80%, rgba(148, 163, 184, 0.22) 0%, transparent 55%),
+        repeating-linear-gradient(
+          32deg,
+          rgba(15, 23, 42, 0.035) 0px,
+          rgba(255, 255, 255, 0.16) 2px,
+          transparent 5px,
+          rgba(100, 116, 139, 0.04) 9px
+        ),
+        repeating-linear-gradient(
+          -54deg,
+          rgba(255, 255, 255, 0.22) 0px,
+          rgba(15, 23, 42, 0.03) 3px,
+          transparent 7px,
+          rgba(255, 255, 255, 0.12) 12px
+        );
     }
-    .card {
-      background: #1e293b;
-      padding: 36px 28px;
-      border-radius: 16px;
+
+    /* Overlay SVG guratan lipatan kertas halus agar terasa lebih natural */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.42;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Cg fill='none' stroke='%2364748b' stroke-width='1' opacity='0.45'%3E%3Cpath d='M0 65 L130 140 L240 55 L390 155 L600 70'/%3E%3Cpath d='M130 140 L185 275 L315 220 L390 155'/%3E%3Cpath d='M0 245 L185 275 L95 400'/%3E%3Cpath d='M315 220 L465 315 L600 240'/%3E%3Cpath d='M240 55 L315 220'/%3E%3Cpath d='M465 315 L520 400'/%3E%3C/g%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.2' opacity='0.65'%3E%3Cpath d='M2 67 L132 142 L242 57 L392 157 L600 72'/%3E%3Cpath d='M187 277 L317 222 L467 317'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 600px 400px;
+      z-index: 0;
+    }
+
+    .stage {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      max-width: 480px;
+      max-width: 920px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
     }
-    h2 {
-      margin: 0;
-      font-size: 26px;
-    }
-    .hint {
-      font-size: 13px;
-      color: #94a3b8;
-      margin-top: 8px;
-    }
-    input {
-      width: 100%;
-      padding: 14px;
-      font-size: 18px;
-      border-radius: 10px;
-      border: 2px solid #38bdf8;
-      background: #0f172a;
-      color: #ffffff;
-      text-align: center;
-      margin-top: 16px;
-      outline: none;
-    }
-    input:focus {
-      border-color: #4ade80;
-    }
-    .hasil {
-      margin-top: 24px;
-      padding: 20px;
-      border-radius: 12px;
-      background: #0f172a;
-      min-height: 135px;
+
+    .hero-display {
+      min-height: 170px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
+      margin-bottom: 34px;
+      padding: 0 12px;
     }
+
     .nama {
-      font-size: 28px;
-      font-weight: bold;
-      color: #4ade80;
+      font-size: clamp(42px, 7.6vw, 84px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      color: #0b0f19;
+      margin: 0;
       word-break: break-word;
     }
-    .nip {
-      font-size: 16px;
-      font-weight: bold;
-      color: #cbd5e1;
-      margin-top: 6px;
-    }
+
     .tim {
-      font-size: 20px;
-      color: #38bdf8;
-      margin-top: 6px;
+      font-size: clamp(18px, 3vw, 31px);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      line-height: 1.2;
+      color: #111827;
+      margin-top: 8px;
     }
-    .ditolak {
-      color: #f87171;
-    }
-    .meta {
+
+    .nip-badge {
       font-size: 13px;
-      color: #94a3b8;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .placeholder-title {
+      font-size: clamp(28px, 4.5vw, 44px);
+      font-weight: 700;
+      color: #334155;
+      margin: 0;
+    }
+
+    .placeholder-sub {
+      font-size: 15px;
+      color: #64748b;
+      margin-top: 8px;
+    }
+
+    .status-error {
+      font-size: clamp(26px, 4vw, 38px);
+      font-weight: 800;
+      color: #b91c1c;
+      margin: 0;
+    }
+
+    .tap-panel {
+      width: 100%;
+      max-width: 390px;
+      background: rgba(203, 213, 225, 0.56);
+      backdrop-filter: blur(4px);
+      border-radius: 16px;
+      padding: 20px 24px 24px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .tap-heading {
+      font-size: 19px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .tap-instruction {
+      font-size: 13px;
+      color: #1e293b;
+      margin-top: 4px;
+      margin-bottom: 14px;
+    }
+
+    .rfid-input {
+      width: 100%;
+      height: 40px;
+      border: none;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 15px;
+      text-align: center;
+      padding: 0 18px;
+      outline: none;
+      box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+
+    .rfid-input::placeholder {
+      color: #334155;
+    }
+
+    .rfid-input:focus {
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.25);
+    }
+
+    .info-kecil {
       margin-top: 10px;
+      font-size: 12px;
+      color: #475569;
+      min-height: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Tap Kartu RFID</h2>
-    <div class="hint">Pastikan kursor aktif di kolom di bawah ini</div>
+  <main class="stage">
+    <section class="hero-display" id="hasilBox">
+      <div class="placeholder-title">Siap Absen</div>
+      <div class="placeholder-sub">Tempelkan kartu RFID untuk menampilkan nama dan tim</div>
+    </section>
 
-    <input
-      id="rfidInput"
-      type="text"
-      placeholder="Menunggu tap kartu..."
-      autofocus
-      autocomplete="off"
-    />
+    <section class="tap-panel">
+      <h1 class="tap-heading">Tap Kartu RFID</h1>
+      <p class="tap-instruction">Pastikan kursor aktif di kolom bawah ini</p>
 
-    <div class="hasil" id="hasilBox">
-      <div class="meta">Belum ada kartu yang di-tap</div>
-    </div>
-  </div>
+      <input
+        id="rfidInput"
+        class="rfid-input"
+        type="text"
+        placeholder="Menunggu tap kartu ....."
+        autofocus
+        autocomplete="off"
+      />
+
+      <div class="info-kecil" id="infoStatus"></div>
+    </section>
+  </main>
 
   <script>
     const inputEl = document.getElementById("rfidInput");
     const hasilBox = document.getElementById("hasilBox");
+    const infoStatus = document.getElementById("infoStatus");
 
-    // Fokuskan kembali ke input saat area halaman diklik
+    // Jaga fokus agar tap dari RFID scanner selalu masuk ke kolom input
     document.addEventListener("click", () => {
       inputEl.focus();
     });
@@ -123,7 +218,7 @@
         inputEl.value = "";
         if (!uid) return;
 
-        hasilBox.innerHTML = `<div class="meta">Memproses UID: <b>${escapeHtml(uid)}</b>...</div>`;
+        infoStatus.textContent = `Memproses UID: ${uid}...`;
 
         try {
           const res = await fetch(`/api/absen?uid=${encodeURIComponent(uid)}`);
@@ -131,30 +226,33 @@
 
           if (!res.ok) {
             hasilBox.innerHTML = `
-              <div class="nama ditolak">Gagal terhubung ke Spreadsheet</div>
-              <div class="meta">${escapeHtml(data.message || "Terjadi kesalahan server")}</div>
+              <div class="status-error">Gagal Terhubung</div>
+              <div class="placeholder-sub">${escapeHtml(data.message || "Terjadi kesalahan pada server")}</div>
             `;
+            infoStatus.textContent = "";
             return;
           }
 
           if (data.status === "success") {
             hasilBox.innerHTML = `
               <div class="nama">${escapeHtml(data.nama)}</div>
-              <div class="nip">NIP: ${escapeHtml(data.nip)}</div>
-              <div class="tim">Tim: ${escapeHtml(data.tim)}</div>
-              <div class="meta">UID: ${escapeHtml(data.uid)} • ${escapeHtml(data.waktu)}</div>
+              <div class="tim">${escapeHtml(data.tim)}</div>
+              <div class="nip-badge">NIP: ${escapeHtml(data.nip)} • ${escapeHtml(data.waktu)}</div>
             `;
+            infoStatus.textContent = `Tercatat • UID: ${data.uid}`;
           } else {
             hasilBox.innerHTML = `
-              <div class="nama ditolak">Kartu Tidak Terdaftar</div>
-              <div class="meta">UID: ${escapeHtml(data.uid)} • ${escapeHtml(data.waktu || "")}</div>
+              <div class="status-error">Kartu Tidak Terdaftar</div>
+              <div class="placeholder-sub">UID: ${escapeHtml(data.uid)} ${data.waktu ? "• " + escapeHtml(data.waktu) : ""}</div>
             `;
+            infoStatus.textContent = "Daftarkan UID ke sheet Master_Data";
           }
         } catch (err) {
           hasilBox.innerHTML = `
-            <div class="nama ditolak">Gagal terhubung ke Spreadsheet</div>
-            <div class="meta">Periksa koneksi jaringan atau konfigurasi Vercel</div>
+            <div class="status-error">Gagal Terhubung</div>
+            <div class="placeholder-sub">Periksa koneksi atau konfigurasi Vercel</div>
           `;
+          infoStatus.textContent = "";
         } finally {
           inputEl.focus();
         }
