@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Absensi RFID</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: Arial, sans-serif;
       background: #0f172a;
@@ -14,47 +17,90 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      padding: 16px;
     }
     .card {
       background: #1e293b;
-      padding: 36px;
+      padding: 36px 28px;
       border-radius: 16px;
       width: 100%;
       max-width: 480px;
       text-align: center;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+    h2 {
+      margin: 0;
+      font-size: 26px;
+    }
+    .hint {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 8px;
     }
     input {
       width: 100%;
       padding: 14px;
       font-size: 18px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 2px solid #38bdf8;
       background: #0f172a;
-      color: #fff;
+      color: #ffffff;
       text-align: center;
-      box-sizing: border-box;
-      margin-top: 12px;
+      margin-top: 16px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #4ade80;
     }
     .hasil {
       margin-top: 24px;
       padding: 20px;
       border-radius: 12px;
       background: #0f172a;
-      min-height: 125px;
+      min-height: 135px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .nama { font-size: 28px; font-weight: bold; color: #4ade80; }
-    .nip { font-size: 16px; color: #cbd5e1; margin-top: 4px; font-weight: bold; }
-    .tim { font-size: 20px; color: #38bdf8; margin-top: 6px; }
-    .ditolak { color: #f87171; }
-    .meta { font-size: 13px; color: #94a3b8; margin-top: 12px; }
+    .nama {
+      font-size: 28px;
+      font-weight: bold;
+      color: #4ade80;
+      word-break: break-word;
+    }
+    .nip {
+      font-size: 16px;
+      font-weight: bold;
+      color: #cbd5e1;
+      margin-top: 6px;
+    }
+    .tim {
+      font-size: 20px;
+      color: #38bdf8;
+      margin-top: 6px;
+    }
+    .ditolak {
+      color: #f87171;
+    }
+    .meta {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>Tap Kartu RFID</h2>
-    <p class="meta">Pastikan kursor aktif di kolom di bawah ini</p>
-    <input id="rfidInput" type="text" placeholder="Menunggu tap kartu..." autofocus autocomplete="off" />
+    <div class="hint">Pastikan kursor aktif di kolom di bawah ini</div>
+
+    <input
+      id="rfidInput"
+      type="text"
+      placeholder="Menunggu tap kartu..."
+      autofocus
+      autocomplete="off"
+    />
 
     <div class="hasil" id="hasilBox">
       <div class="meta">Belum ada kartu yang di-tap</div>
@@ -62,42 +108,67 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyR4UzfKT9tmg05r-W36_XBkHr4nBqTrxpoxI4Pqv1Q5BOO5uJNpANyvdxJLPmfHkun8w/exec";
     const inputEl = document.getElementById("rfidInput");
     const hasilBox = document.getElementById("hasilBox");
 
-    document.addEventListener("click", () => inputEl.focus());
+    // Fokuskan kembali ke input saat area halaman diklik
+    document.addEventListener("click", () => {
+      inputEl.focus();
+    });
 
     inputEl.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
+        e.preventDefault();
         const uid = inputEl.value.trim();
         inputEl.value = "";
         if (!uid) return;
 
-        hasilBox.innerHTML = `<div class="meta">Memproses UID: <b>${uid}</b>...</div>`;
+        hasilBox.innerHTML = `<div class="meta">Memproses UID: <b>${escapeHtml(uid)}</b>...</div>`;
 
         try {
-          const res = await fetch(`${SCRIPT_URL}?uid=${encodeURIComponent(uid)}`);
+          const res = await fetch(`/api/absen?uid=${encodeURIComponent(uid)}`);
           const data = await res.json();
+
+          if (!res.ok) {
+            hasilBox.innerHTML = `
+              <div class="nama ditolak">Gagal terhubung ke Spreadsheet</div>
+              <div class="meta">${escapeHtml(data.message || "Terjadi kesalahan server")}</div>
+            `;
+            return;
+          }
 
           if (data.status === "success") {
             hasilBox.innerHTML = `
-              <div class="nama">${data.nama}</div>
-              <div class="nip">NIP: ${data.nip}</div>
-              <div class="tim">Tim: ${data.tim}</div>
-              <div class="meta">UID: ${data.uid} • ${data.waktu}</div>
+              <div class="nama">${escapeHtml(data.nama)}</div>
+              <div class="nip">NIP: ${escapeHtml(data.nip)}</div>
+              <div class="tim">Tim: ${escapeHtml(data.tim)}</div>
+              <div class="meta">UID: ${escapeHtml(data.uid)} • ${escapeHtml(data.waktu)}</div>
             `;
           } else {
             hasilBox.innerHTML = `
               <div class="nama ditolak">Kartu Tidak Terdaftar</div>
-              <div class="meta">UID: ${data.uid} • ${data.waktu || ""}</div>
+              <div class="meta">UID: ${escapeHtml(data.uid)} • ${escapeHtml(data.waktu || "")}</div>
             `;
           }
         } catch (err) {
-          hasilBox.innerHTML = `<div class="nama ditolak">Gagal terhubung ke Spreadsheet</div>`;
+          hasilBox.innerHTML = `
+            <div class="nama ditolak">Gagal terhubung ke Spreadsheet</div>
+            <div class="meta">Periksa koneksi jaringan atau konfigurasi Vercel</div>
+          `;
+        } finally {
+          inputEl.focus();
         }
       }
     });
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
   </script>
 </body>
 </html>
