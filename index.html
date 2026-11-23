@@ -20,45 +20,18 @@
       padding: 24px;
       position: relative;
       overflow-x: hidden;
-      /* Latar belakang tekstur kertas kusut abu-abu terang */
       background-color: #e4e6e9;
-      background-image:
-        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.72) 0%, transparent 45%),
-        radial-gradient(circle at 82% 28%, rgba(255, 255, 255, 0.58) 0%, transparent 48%),
-        radial-gradient(circle at 45% 80%, rgba(148, 163, 184, 0.22) 0%, transparent 55%),
-        repeating-linear-gradient(
-          32deg,
-          rgba(15, 23, 42, 0.035) 0px,
-          rgba(255, 255, 255, 0.16) 2px,
-          transparent 5px,
-          rgba(100, 116, 139, 0.04) 9px
-        ),
-        repeating-linear-gradient(
-          -54deg,
-          rgba(255, 255, 255, 0.22) 0px,
-          rgba(15, 23, 42, 0.03) 3px,
-          transparent 7px,
-          rgba(255, 255, 255, 0.12) 12px
-        );
-    }
-
-    /* Overlay SVG guratan lipatan kertas halus agar terasa lebih natural */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.42;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Cg fill='none' stroke='%2364748b' stroke-width='1' opacity='0.45'%3E%3Cpath d='M0 65 L130 140 L240 55 L390 155 L600 70'/%3E%3Cpath d='M130 140 L185 275 L315 220 L390 155'/%3E%3Cpath d='M0 245 L185 275 L95 400'/%3E%3Cpath d='M315 220 L465 315 L600 240'/%3E%3Cpath d='M240 55 L315 220'/%3E%3Cpath d='M465 315 L520 400'/%3E%3C/g%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.2' opacity='0.65'%3E%3Cpath d='M2 67 L132 142 L242 57 L392 157 L600 72'/%3E%3Cpath d='M187 277 L317 222 L467 317'/%3E%3C/g%3E%3C/svg%3E");
-      background-size: 600px 400px;
-      z-index: 0;
+      background-image: url("./bg.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
 
     .stage {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 920px;
+      max-width: 1120px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -66,45 +39,37 @@
     }
 
     .hero-display {
-      min-height: 170px;
+      min-height: 210px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      margin-bottom: 34px;
+      margin-bottom: 36px;
       padding: 0 12px;
     }
 
     .nama {
-      font-size: clamp(42px, 7.6vw, 84px);
+      font-size: clamp(56px, 10.5vw, 128px);
       font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
+      letter-spacing: -0.025em;
+      line-height: 1.02;
       color: #0b0f19;
       margin: 0;
       word-break: break-word;
     }
 
     .tim {
-      font-size: clamp(18px, 3vw, 31px);
+      font-size: clamp(24px, 4.4vw, 50px);
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      line-height: 1.2;
+      line-height: 1.15;
       color: #111827;
-      margin-top: 8px;
-    }
-
-    .nip-badge {
-      font-size: 13px;
-      font-weight: 600;
-      color: #334155;
-      margin-top: 8px;
-      letter-spacing: 0.02em;
+      margin-top: 12px;
     }
 
     .placeholder-title {
-      font-size: clamp(28px, 4.5vw, 44px);
+      font-size: clamp(32px, 5vw, 52px);
       font-weight: 700;
       color: #334155;
       margin: 0;
@@ -117,7 +82,7 @@
     }
 
     .status-error {
-      font-size: clamp(26px, 4vw, 38px);
+      font-size: clamp(28px, 4.5vw, 44px);
       font-weight: 800;
       color: #b91c1c;
       margin: 0;
@@ -206,7 +171,6 @@
     const hasilBox = document.getElementById("hasilBox");
     const infoStatus = document.getElementById("infoStatus");
 
-    // Jaga fokus agar tap dari RFID scanner selalu masuk ke kolom input
     document.addEventListener("click", () => {
       inputEl.focus();
     });
@@ -237,9 +201,8 @@
             hasilBox.innerHTML = `
               <div class="nama">${escapeHtml(data.nama)}</div>
               <div class="tim">${escapeHtml(data.tim)}</div>
-              <div class="nip-badge">NIP: ${escapeHtml(data.nip)} • ${escapeHtml(data.waktu)}</div>
             `;
-            infoStatus.textContent = `Tercatat • UID: ${data.uid}`;
+            infoStatus.textContent = `Tercatat • UID: ${data.uid} • ${escapeHtml(data.waktu || "")}`;
           } else {
             hasilBox.innerHTML = `
               <div class="status-error">Kartu Tidak Terdaftar</div>
